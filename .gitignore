@@ -1,0 +1,8 @@
+*.pyc
+*/__pycache__
+
+.env
+*credentials.json
+*.session
+*.log
+test_cases

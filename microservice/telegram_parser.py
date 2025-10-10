@@ -1,0 +1,86 @@
+from telethon import TelegramClient, events
+from config import parser_chat_id, logging_chat_id
+from telethon.errors.rpcerrorlist import AuthKeyUnregisteredError
+from utils import check_msg
+
+async def get_authorized_client(session, api_id, api_hash, logger, **kwargs):
+    """
+    Return a connected & authorized client or None.
+    Never triggers interactive login.
+    """
+    client = TelegramClient(session, api_id, api_hash, **kwargs)
+    try:
+        await client.connect()  # no prompt
+        if await client.is_user_authorized():
+            #logger.info("Session is authorized — proceeding.")
+            return client
+        else:
+            #logger.warning("Session requires login — skipping this user.")
+            await client.disconnect()
+            return None
+    except AuthKeyUnregisteredError:
+        logger.warning("Auth key unregistered/revoked — skipping this user.")
+    except ValueError as e:
+        logger.warning("Invalid/corrupted StringSession — skipping: %s", e)
+    except Exception as e:
+        logger.exception("Failed to init client — skipping: %s", e)
+
+    try:
+        await client.disconnect()
+    except Exception:
+        pass
+    return None
+
+async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, llm_client,
+                    send_message_func=None, logger=None, system_version="4.16.30-vxCUSTOM", verbose=False
+                    ):
+    '''Телеграм парсер'''
+    logger.info(f"Creating client with name {bot_name}")
+    
+    client = await get_authorized_client(session, api_id, api_hash, logger, system_version=system_version)
+    if client is None:
+        logger.warn(f"Client with name {bot_name} has some issues")
+        message = f"Client has some issues\nname: {bot_name}\nphone: {bot_phone}\nPlease generate a new Token in the spreadsheet"
+        await send_message_func(message, logging_chat_id) # Отправляем лог в канал с логами
+        return None
+    logger.info(f"Client with name {bot_name} is created")
+
+    @client.on(events.NewMessage(chats=None))
+    async def handler(event):
+        '''Забирает сообщения из телеграмм каналов и посылает их в наш канал'''
+        chat = await event.get_chat()
+        if str(chat.id) == str(parser_chat_id) or '-100'+str(chat.id) == str(parser_chat_id):
+            return
+
+        msg_text = event.raw_text
+        if msg_text == '':
+            return
+
+        # Флаг, показывающий, прошло ли сообщение фильтрацию
+        is_msg_relevant = False
+
+        is_msg_relevant = check_msg(llm_client, msg_text)
+        
+        if is_msg_relevant:
+            if verbose:
+                logger.info(f"Found a relevant message: {msg_text}")
+            source = getattr(chat, "title", "")
+            if source.find('t.me') != -1:
+                link = f'{source}/{event.message.id}'
+                channel = '@' + source.split('/')[-1]
+                msg_header = f'<b>{channel}</b>\n{link}'
+            else:
+                msg_header = f'Message in Private channel\n{source}'
+            
+            acc_info = f'Telegram account name: {bot_name}, phone: {bot_phone}'
+
+            post = f'{msg_header}\n\n{acc_info}\n\n"{msg_text}"'
+                
+            # Отправляем в основной канал
+            await send_message_func(post, parser_chat_id)
+        else:
+            if verbose:
+                logger.info(f"Found an irrelevant message: {msg_text}")
+
+
+    await client.run_until_disconnected()

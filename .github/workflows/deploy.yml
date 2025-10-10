@@ -1,0 +1,73 @@
+name: Deploy to server
+
+on:
+  push:
+    tags:
+      - 'deploy-*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull image
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            cd /usr/src/marketing-bot
+            git pull
+
+      - name: Upload Google credentials.json
+        env:
+          GCP_SHEETS_JSON_B64: ${{ secrets.GCP_SHEETS_JSON_B64 }}
+        run: |
+          echo "$GCP_SHEETS_JSON_B64" | base64 -d > credentials.json
+    
+      - name: Copy credentials to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          source: "credentials.json"
+          target: "/tmp/credentials.json"
+    
+      - name: Move credentials to secure path
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            sudo mkdir -p /etc/secrets
+            sudo mv /tmp/credentials.json /etc/secrets/google-credentials.json
+            sudo chmod 600 /etc/secrets/google-credentials.json
+            sudo chown root:root /etc/secrets/google-credentials.json
+
+      - name: Build image
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            cd /usr/src/marketing-bot
+            docker build -f ./Dockerfile . --tag marketing-bot:latest
+
+      - name: Docker compose start
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            cd /usr/src/marketing-bot
+            docker compose down
+            docker compose up

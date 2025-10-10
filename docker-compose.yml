@@ -1,0 +1,10 @@
+services:
+    microservice:
+        build:
+            context: .
+        image: liga-znaniy-marketing-aggregator
+        container_name: liga-znaniy-marketing-aggregator
+        restart: unless-stopped
+        command: bash -c "python3 microservice/main.py"
+        env_file:
+            - .env

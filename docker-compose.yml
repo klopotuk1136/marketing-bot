@@ -1,10 +1,15 @@
 services:
     microservice:
-        build:
-            context: .
-        image: liga-znaniy-marketing-aggregator
-        container_name: liga-znaniy-marketing-aggregator
+        image: marketing-bot:latest
+        container_name: liga-znaniy-marketing-bot
         restart: unless-stopped
         command: bash -c "python3 microservice/main.py"
+        environment:
+            - API_HASH
+            - API_ID
+            - BOT_TOKEN
+            - LOGGING_CHAT_ID
+            - PARSER_CHAT_ID
+            - OPENAI_API_KEY
         env_file:
             - .env

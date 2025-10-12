@@ -14,6 +14,7 @@ openai_api_key = os.environ.get("OPENAI_API_KEY")
 
 # Logging parameter
 verbose = True
+google_credentials_path = "google-credentials.json"
 
 
 words_whitelist = [

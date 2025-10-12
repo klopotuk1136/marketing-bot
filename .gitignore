@@ -6,3 +6,4 @@
 *.session
 *.log
 test_cases
+venv

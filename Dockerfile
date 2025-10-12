@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY microservice microservice
 COPY requirements.txt ./
-COPY liga_znaniy_credentials.json liga_znaniy_credentials.json
+COPY google-credentials.json google-credentials.json
 
 RUN apt-get install \
     && pip install -r requirements.txt 

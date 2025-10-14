@@ -11,5 +11,3 @@ services:
             - LOGGING_CHAT_ID
             - PARSER_CHAT_ID
             - OPENAI_API_KEY
-        env_file:
-            - .env

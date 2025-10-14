@@ -29,6 +29,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.SSH_PORT || 22 }}
+          envs: GCP_SHEETS_JSON_B64
           script: |
             cd /usr/src/marketing-bot
             echo "$GCP_SHEETS_JSON_B64" | base64 -d > google-credentials.json

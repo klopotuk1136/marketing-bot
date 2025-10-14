@@ -61,10 +61,10 @@ jobs:
           script: |
             cd /usr/src/marketing-bot
             docker compose down
-            API_HASH="$API_HASH" \
-            API_ID="$API_ID" \
-            BOT_TOKEN="$BOT_TOKEN" \
-            LOGGING_CHAT_ID="$LOGGING_CHAT_ID" \
-            PARSER_CHAT_ID="$PARSER_CHAT_ID" \
-            OPENAI_API_KEY="$OPENAI_API_KEY" \
+            export API_HASH="$API_HASH"
+            export API_ID="$API_ID"
+            export BOT_TOKEN="$BOT_TOKEN"
+            export LOGGING_CHAT_ID="$LOGGING_CHAT_ID"
+            export PARSER_CHAT_ID="$PARSER_CHAT_ID"
+            export OPENAI_API_KEY="$OPENAI_API_KEY"
             docker compose up -d

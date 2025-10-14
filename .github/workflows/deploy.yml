@@ -67,4 +67,4 @@ jobs:
             LOGGING_CHAT_ID="$LOGGING_CHAT_ID" \
             PARSER_CHAT_ID="$PARSER_CHAT_ID" \
             OPENAI_API_KEY="$OPENAI_API_KEY" \
-            docker compose up
+            docker compose up -d

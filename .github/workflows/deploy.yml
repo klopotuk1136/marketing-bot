@@ -58,6 +58,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.SSH_PORT || 22 }}
+          envs: API_HASH, API_ID, BOT_TOKEN, LOGGING_CHAT_ID, PARSER_CHAT_ID, OPENAI_API_KEY
           script: |
             cd /usr/src/marketing-bot
             docker compose down

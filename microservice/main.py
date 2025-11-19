@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from telethon.sessions import StringSession
 
 from telegram_parser import start_telegram_parser
 from bot_sender import bot_sender, send_message
@@ -34,7 +33,7 @@ async def main():
                 continue
             tasks.append(asyncio.create_task(
                 start_telegram_parser(
-                    session=StringSession(session_string),
+                    session=session_string,
                     api_id=api_id,
                     api_hash=api_hash,
                     bot_phone=bot_phone,
@@ -47,6 +46,7 @@ async def main():
             ))
         except KeyError as e:
             logger.error(e)
+            
     await asyncio.gather(*tasks)
 
 if __name__ == "__main__":

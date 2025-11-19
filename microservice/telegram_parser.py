@@ -2,14 +2,17 @@ from telethon import TelegramClient, events
 from config import parser_chat_id, logging_chat_id
 from telethon.errors.rpcerrorlist import AuthKeyUnregisteredError
 from utils import check_msg
+from telethon.sessions import StringSession
 
 async def get_authorized_client(session, api_id, api_hash, logger, **kwargs):
     """
     Return a connected & authorized client or None.
     Never triggers interactive login.
     """
-    client = TelegramClient(session, api_id, api_hash, **kwargs)
+    
     try:
+        string_session = StringSession(session)
+        client = TelegramClient(string_session, api_id, api_hash, **kwargs)
         await client.connect()  # no prompt
         if await client.is_user_authorized():
             #logger.info("Session is authorized — proceeding.")
@@ -56,6 +59,7 @@ async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, 
         if msg_text == '':
             return
 
+        user_name = event.post_author
         # Флаг, показывающий, прошло ли сообщение фильтрацию
         is_msg_relevant = False
 
@@ -73,8 +77,9 @@ async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, 
                 msg_header = f'Message in Private channel\n{source}'
             
             acc_info = f'Telegram account name: {bot_name}, phone: {bot_phone}'
+            user_info = f'The author of the message: {user_name}'
 
-            post = f'{msg_header}\n\n{acc_info}\n\n"{msg_text}"'
+            post = f'{msg_header}\n\n{acc_info}\n\n{user_info}\n\n"{msg_text}"'
                 
             # Отправляем в основной канал
             await send_message_func(post, parser_chat_id)

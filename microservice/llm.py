@@ -41,6 +41,9 @@ system_prompt = """
     ]
 """
 
+# Добавить кусок про не пропускание чужой рекламы
+
+
 def check_message_relevancy_with_llm(client, msg):
 
     response = client.responses.create(

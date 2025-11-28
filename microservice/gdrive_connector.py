@@ -10,9 +10,15 @@ def get_client():
     client = gspread.authorize(creds)
     return client
 
-def get_bots_metadata():
+def get_tg_bots_metadata():
     client = get_client()
     sheet = client.open("Liga znaniy TG Bot tokens").sheet1
+    data = sheet.get_all_records()
+    return data
+
+def get_vk_bots_metadata():
+    client = get_client()
+    sheet = client.open("Liga znaniy TG Bot tokens").get_worksheet(1)
     data = sheet.get_all_records()
     return data
 

@@ -43,7 +43,7 @@ async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, 
     client = await get_authorized_client(session, api_id, api_hash, logger, system_version=system_version)
     if client is None:
         logger.warn(f"Client with name {bot_name} has some issues")
-        message = f"Client has some issues\nname: {bot_name}\nphone: {bot_phone}\nPlease generate a new Token in the spreadsheet"
+        message = f"Telegram Client has some issues\nname: {bot_name}\nphone: {bot_phone}\nPlease generate a new Token in the spreadsheet"
         await send_message_func(message, logging_chat_id) # Отправляем лог в канал с логами
         return None
     logger.info(f"Client with name {bot_name} is created")
@@ -77,9 +77,9 @@ async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, 
                 msg_header = f'Message in Private channel\n{source}'
             
             acc_info = f'Telegram account name: {bot_name}, phone: {bot_phone}'
-            user_info = f'The author of the message: {user_name}'
+            #user_info = f'The author of the message: {user_name}'
 
-            post = f'{msg_header}\n\n{acc_info}\n\n{user_info}\n\n"{msg_text}"'
+            post = f'{msg_header}\n\n{acc_info}\n\n"{msg_text}"'
                 
             # Отправляем в основной канал
             await send_message_func(post, parser_chat_id)

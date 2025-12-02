@@ -1,6 +1,8 @@
 from telethon import TelegramClient, events
-from config import parser_chat_id, logging_chat_id
+from config import parser_chat_id, logging_chat_id, verbose
 from telethon.errors.rpcerrorlist import AuthKeyUnregisteredError
+import asyncio
+from gdrive_connector import get_tg_bots_metadata
 from utils import check_msg
 from telethon.sessions import StringSession
 
@@ -35,7 +37,7 @@ async def get_authorized_client(session, api_id, api_hash, logger, **kwargs):
     return None
 
 async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, llm_client,
-                    send_message_func=None, logger=None, system_version="4.16.30-vxCUSTOM", verbose=False
+                    send_message_func=None, logger=None, system_version="4.16.30-vxCUSTOM"
                     ):
     '''Телеграм парсер'''
     logger.info(f"Creating client with name {bot_name}")
@@ -89,3 +91,29 @@ async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, 
 
 
     await client.run_until_disconnected()
+
+def create_tg_parser_tasks(api_id, api_hash, llm_client, send_message_func, logger):
+    tasks = []
+    for meta in get_tg_bots_metadata():
+        try:
+            session_string = meta["SessionString"].strip()
+            bot_phone = meta["Phone"]
+            bot_name = meta["Name"]
+            if bot_name is None or len(bot_name) == 0 or session_string is None or len(session_string) == 0:
+                continue
+            tasks.append(asyncio.create_task(
+                start_telegram_parser(
+                    session=session_string,
+                    api_id=api_id,
+                    api_hash=api_hash,
+                    bot_phone=bot_phone,
+                    bot_name=bot_name,
+                    llm_client=llm_client,
+                    send_message_func=send_message_func,
+                    logger=logger
+                )
+            ))
+        except KeyError as e:
+            logger.error(e)
+    
+    return tasks

@@ -10,8 +10,11 @@ parser_chat_id = int(os.environ.get('PARSER_CHAT_ID')) # id канала куд�
 parser_vk_chat_id = int(os.environ.get('PARSER_VK_CHAT_ID'))
 logging_chat_id = int(os.environ.get('LOGGING_CHAT_ID'))
 
+tg_parser_enabled = True
 # VK
 vk_api_version = "5.131"
+
+vk_parser_enabled = True
 
 # Параметры для LLM
 openai_api_key = os.environ.get("OPENAI_API_KEY")

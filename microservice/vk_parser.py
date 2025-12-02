@@ -141,5 +141,5 @@ async def start_vk_parser(token: str, bot_name: str, llm_client, send_message_fu
             except Exception as e:
                 logger.info(f"[{bot_name}] Error: {e}")
                 message = f"VK Client has some issues\nname: {bot_name}\n Error: {e}\n"
-                await send_message_func(message, logging_chat_id)
+                # await send_message_func(message, logging_chat_id)
                 await asyncio.sleep(3)

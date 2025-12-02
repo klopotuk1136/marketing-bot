@@ -13,11 +13,11 @@ def create_logger(name, level=logging.INFO):
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(formatter)
 
-    file_handler = logging.FileHandler('info.log')
-    file_handler.setFormatter(formatter)
+    #file_handler = logging.FileHandler('info.log')
+    #file_handler.setFormatter(formatter)
 
     logger.addHandler(handler)
-    logger.addHandler(file_handler)
+    #logger.addHandler(file_handler)
     return logger
 
 def check_pattern_func(text):
@@ -41,6 +41,10 @@ def check_msg_with_llm(client, msg_text):
     return result_json.get('is_relevant')
 
 def check_msg(llm_client, msg):
+
+    if len(msg) == 0:
+        return False
+    
     if not check_pattern_func(msg):
         return False
     

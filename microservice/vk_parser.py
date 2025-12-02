@@ -1,6 +1,8 @@
 from config import parser_vk_chat_id, logging_chat_id, vk_api_version
 from utils import check_msg
 from gdrive_connector import get_vk_bots_metadata
+import traceback
+import json
 import aiohttp
 import asyncio
 
@@ -45,6 +47,18 @@ async def get_chat_title(peer_id: int, token: str, session: aiohttp.ClientSessio
     except:
         return None
 
+async def refresh_longpoll(token, session, logger, bot_name, send_message_func):
+    try:
+        lp = await get_longpoll_server(token, session, logger)
+        if not lp:
+            logger.warn(f"Client with name {bot_name} has some issues")
+            message = f"VK Client has some issues\nname: {bot_name}\nPlease generate a new Token in the spreadsheet"
+            await send_message_func(message, logging_chat_id) # Отправляем лог в канал с логами
+            return None, None, None
+        return lp["key"], lp["server"], lp["ts"]
+    except Exception as e:
+        logger.error(f"Longpoll refresh exception: {repr(e)}")
+        return None, None, None
 
 async def start_vk_parser(token: str, bot_name: str, llm_client, send_message_func=None, logger=None, verbose=False):
     """
@@ -54,18 +68,9 @@ async def start_vk_parser(token: str, bot_name: str, llm_client, send_message_fu
 
     async with aiohttp.ClientSession() as session:
 
-        lp = await get_longpoll_server(token, session, logger)
-        if lp is None:
-            logger.warn(f"Client with name {bot_name} has some issues")
-            message = f"VK Client has some issues\nname: {bot_name}\nPlease generate a new Token in the spreadsheet"
-            await send_message_func(message, logging_chat_id) # Отправляем лог в канал с логами
-            return None
-        logger.info(f"Client with name {bot_name} is created")
-        key = lp["key"]
-        server = lp["server"]
-        ts = lp["ts"]
+        key, server, ts = await refresh_longpoll(token, session, logger, bot_name, send_message_func)
 
-        logger.info(f"[{bot_name}] Longpoll connected.")
+        logger.info(f"Client with name {bot_name} is created")
 
         while True:
             try:
@@ -82,22 +87,19 @@ async def start_vk_parser(token: str, bot_name: str, llm_client, send_message_fu
                     timeout=30,
                 ) as resp:
 
-                    data = await resp.json()
+                    text = await resp.text()
+                    try:
+                        data = json.loads(text)
+                    except Exception:
+                        logger.error(f"[{bot_name}] Invalid JSON from VK: {text!r}")
+                        raise
 
                     if "failed" in data:
                         if data["failed"] == 1:
                             ts = data["ts"]
                             continue
                         else:
-                            lp = await get_longpoll_server(token, session, logger)
-                            if lp is None:
-                                logger.warn(f"Client with name {bot_name} has some issues")
-                                message = f"VK Client has some issues\nname: {bot_name}\nPlease generate a new Token in the spreadsheet"
-                                await send_message_func(message, logging_chat_id) # Отправляем лог в канал с логами
-                                return None
-                            key = lp["key"]
-                            server = lp["server"]
-                            ts = lp["ts"]
+                            key, server, ts = await refresh_longpoll(token, session, logger, bot_name, send_message_func)
                             continue
 
                     ts = data["ts"]
@@ -111,22 +113,31 @@ async def start_vk_parser(token: str, bot_name: str, llm_client, send_message_fu
                             msg_text = upd[5]
                             from_id = upd[6] if len(upd) > 6 else None
                             if from_id:
-                                from_id = int(from_id['from'])
-
-                            sender_name = await get_user_name(from_id, token, session, logger)
-                            chat_title = await get_chat_title(peer_id, token, session)
+                                from_id = int(from_id.get('from', "-1"))
+                            is_group_chat = True
+                            if from_id == -1:
+                                is_group_chat = False
+                
+                            if is_group_chat:
+                                sender_name = await get_user_name(from_id, token, session, logger)
+                                chat_title = await get_chat_title(peer_id, token, session)
+                            else:
+                                sender_name = await get_user_name(peer_id, token, session, logger)
+                                chat_title = await get_user_name(peer_id, token, session, logger)
 
                             logger.info(f"\n[{bot_name}] NEW MESSAGE")
                             logger.info(f"From: {sender_name} ({from_id})")
                             logger.info(f"Chat: {chat_title} ({peer_id})")
-                            logger.info(f"Text: {msg_text}")
-
+                            logger.info(f"Text (len: {len(msg_text)}): {msg_text}")
                             is_msg_relevant = check_msg(llm_client, msg_text)
         
                             if is_msg_relevant:
                                 if verbose:
                                     logger.info(f"Found a relevant message: {msg_text}")
-                                msg_header = f'Message in VK Chat\n{chat_title}'
+                                if is_group_chat:
+                                    msg_header = f'Message in VK Group Chat: {chat_title}'
+                                else:
+                                    msg_header = f'Message in VK Personal Chat: {chat_title}'
                                 
                                 acc_info = f'VK account name: {bot_name}'
                                 user_info = f'The author of the message: {sender_name}'
@@ -140,9 +151,14 @@ async def start_vk_parser(token: str, bot_name: str, llm_client, send_message_fu
                                     logger.info(f"Found an irrelevant message: {msg_text}")
 
             except Exception as e:
-                logger.info(f"[{bot_name}] Error: {e}")
-                message = f"VK Client has some issues\nname: {bot_name}\n Error: {e}\n"
-                # await send_message_func(message, logging_chat_id)
+                logger.error(f"[{bot_name}] Exception caught")
+                logger.error("Exception type: %s", type(e).__name__)
+                logger.error("Exception message: %s", repr(e))
+                #logger.error("Traceback:\n%s", traceback.format_exc())
+
+                key, server, ts = await refresh_longpoll(token, session, logger, bot_name, send_message_func)
+                if not key:
+                    return  
                 await asyncio.sleep(3)
 
 def create_vk_parser_tasks(send_message_func, llm_client, logger):

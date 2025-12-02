@@ -1,5 +1,6 @@
 from config import parser_vk_chat_id, logging_chat_id, vk_api_version
 from utils import check_msg
+from gdrive_connector import get_vk_bots_metadata
 import aiohttp
 import asyncio
 
@@ -143,3 +144,24 @@ async def start_vk_parser(token: str, bot_name: str, llm_client, send_message_fu
                 message = f"VK Client has some issues\nname: {bot_name}\n Error: {e}\n"
                 # await send_message_func(message, logging_chat_id)
                 await asyncio.sleep(3)
+
+def create_vk_parser_tasks(send_message_func, llm_client, logger):
+    tasks = []
+    for meta in get_vk_bots_metadata():
+        try:
+            access_token = meta["AccessToken"].strip()
+            bot_name = meta["Name"]
+            if bot_name is None or len(bot_name) == 0 or access_token is None or len(access_token) == 0:
+                continue
+            tasks.append(asyncio.create_task(
+                start_vk_parser(
+                    token=access_token,
+                    bot_name=bot_name,
+                    send_message_func=send_message_func,
+                    llm_client=llm_client,
+                    logger=logger
+                )
+            ))
+        except KeyError as e:
+            logger.error(e)
+    return tasks

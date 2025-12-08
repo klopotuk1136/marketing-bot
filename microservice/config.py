@@ -14,7 +14,7 @@ tg_parser_enabled = True
 # VK
 vk_api_version = "5.131"
 
-vk_parser_enabled = True
+vk_parser_enabled = False
 
 # Параметры для LLM
 openai_api_key = os.environ.get("OPENAI_API_KEY")

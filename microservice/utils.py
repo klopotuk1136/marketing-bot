@@ -48,9 +48,9 @@ def check_msg(llm_client, msg):
     if not check_pattern_func(msg):
         return False
     
-    is_relevant = check_msg_with_llm(llm_client, msg)
-    if is_relevant is not None:
-        return is_relevant
+    # is_relevant = check_msg_with_llm(llm_client, msg)
+    # if is_relevant is not None:
+    #     return is_relevant
     else:
         return True
     

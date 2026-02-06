@@ -1,6 +1,6 @@
 import logging
 import sys
-from llm import check_message_relevancy_with_llm, parse_json
+from llm import check_message_relevancy_with_llm, parse_json, parse_bool
 from config import words_whitelist, words_blacklist
 
 def create_logger(name, level=logging.INFO):
@@ -38,7 +38,7 @@ def check_pattern_func(text):
 def check_msg_with_llm(client, msg_text):
     llm_response = check_message_relevancy_with_llm(client, msg_text)
     result_json = parse_json(llm_response)
-    return result_json.get('is_relevant')
+    return parse_bool(result_json.get('is_relevant'))
 
 def check_msg(llm_client, msg):
 
@@ -48,9 +48,9 @@ def check_msg(llm_client, msg):
     if not check_pattern_func(msg):
         return False
     
-    # is_relevant = check_msg_with_llm(llm_client, msg)
-    # if is_relevant is not None:
-    #     return is_relevant
+    is_relevant = check_msg_with_llm(llm_client, msg)
+    if is_relevant is not None:
+        return is_relevant
     else:
         return True
     

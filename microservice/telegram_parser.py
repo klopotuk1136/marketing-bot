@@ -1,9 +1,9 @@
 from telethon import TelegramClient, events
-from config import parser_chat_id, logging_chat_id, verbose
+from config import parser_chat_id, parser_chat_all_id, logging_chat_id, verbose
 from telethon.errors.rpcerrorlist import AuthKeyUnregisteredError
 import asyncio
 from gdrive_connector import get_tg_bots_metadata
-from utils import check_msg
+from utils import check_msg, RejectionReason
 from telethon.sessions import StringSession
 
 async def get_authorized_client(session, api_id, api_hash, logger, **kwargs):
@@ -65,7 +65,7 @@ async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, 
         # Флаг, показывающий, прошло ли сообщение фильтрацию
         is_msg_relevant = False
 
-        is_msg_relevant = check_msg(llm_client, msg_text)
+        is_msg_relevant, reason = check_msg(llm_client, msg_text)
         
         if is_msg_relevant:
             if verbose:
@@ -85,6 +85,24 @@ async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, 
                 
             # Отправляем в основной канал
             await send_message_func(post, parser_chat_id)
+        elif reason == RejectionReason.LLM:
+            if verbose:
+                logger.info(f"Found a relevant message: {msg_text}")
+            source = getattr(chat, "title", "")
+            if source.find('t.me') != -1:
+                link = f'{source}/{event.message.id}'
+                channel = '@' + source.split('/')[-1]
+                msg_header = f'<b>{channel}</b>\n{link}'
+            else:
+                msg_header = f'Message in Private channel\n{source}'
+            
+            acc_info = f'Telegram account name: {bot_name}, phone: {bot_phone}'
+            #user_info = f'The author of the message: {user_name}'
+
+            post = f'{msg_header}\n\n{acc_info}\n\n"{msg_text}"'
+                
+            # Отправляем в основной канал
+            await send_message_func(post, parser_chat_all_id)
         else:
             if verbose:
                 logger.info(f"Found an irrelevant message: {msg_text}")

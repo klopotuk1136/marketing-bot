@@ -53,6 +53,7 @@ jobs:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           LOGGING_CHAT_ID: ${{ secrets.LOGGING_CHAT_ID }}
           PARSER_CHAT_ID: ${{ secrets.PARSER_CHAT_ID }}
+          PARSER_CHAT_ALL_MESSAGES_ID: ${{ secrets.PARSER_CHAT_ALL_MESSAGES_ID }}
           PARSER_VK_CHAT_ID: ${{ secrets.PARSER_VK_CHAT_ID }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         with:
@@ -60,7 +61,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.SSH_PORT || 22 }}
-          envs: API_HASH, API_ID, BOT_TOKEN, LOGGING_CHAT_ID, PARSER_CHAT_ID, PARSER_VK_CHAT_ID, OPENAI_API_KEY
+          envs: API_HASH, API_ID, BOT_TOKEN, LOGGING_CHAT_ID, PARSER_CHAT_ID, PARSER_CHAT_ALL_MESSAGES_ID, PARSER_VK_CHAT_ID, OPENAI_API_KEY
           script: |
             cd /usr/src/marketing-bot
             docker compose down
@@ -69,6 +70,7 @@ jobs:
             export BOT_TOKEN="$BOT_TOKEN"
             export LOGGING_CHAT_ID="$LOGGING_CHAT_ID"
             export PARSER_CHAT_ID="$PARSER_CHAT_ID"
+            export PARSER_CHAT_ALL_MESSAGES_ID="$PARSER_CHAT_ALL_MESSAGES_ID"
             export PARSER_VK_CHAT_ID="$PARSER_VK_CHAT_ID"
             export OPENAI_API_KEY="$OPENAI_API_KEY"
             docker compose up -d

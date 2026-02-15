@@ -129,7 +129,7 @@ async def start_vk_parser(token: str, bot_name: str, llm_client, send_message_fu
                             logger.info(f"From: {sender_name} ({from_id})")
                             logger.info(f"Chat: {chat_title} ({peer_id})")
                             logger.info(f"Text (len: {len(msg_text)}): {msg_text}")
-                            is_msg_relevant = check_msg(llm_client, msg_text)
+                            is_msg_relevant, _ = check_msg(llm_client, msg_text)
         
                             if is_msg_relevant:
                                 if verbose:

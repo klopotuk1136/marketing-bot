@@ -2,6 +2,13 @@ import logging
 import sys
 from llm import check_message_relevancy_with_llm, parse_json, parse_bool
 from config import words_whitelist, words_blacklist
+from enum import Enum
+
+class RejectionReason(Enum):
+    EMPTY = 1
+    BLACKLIST = 2
+    LLM = 3
+    OK = 0
 
 def create_logger(name, level=logging.INFO):
     logger = logging.getLogger(name)
@@ -43,14 +50,16 @@ def check_msg_with_llm(client, msg_text):
 def check_msg(llm_client, msg):
 
     if len(msg) == 0:
-        return False
+        return False, RejectionReason.EMPTY
     
     if not check_pattern_func(msg):
-        return False
+        return False, RejectionReason.BLACKLIST
     
     is_relevant = check_msg_with_llm(llm_client, msg)
-    if is_relevant is not None:
-        return is_relevant
+    if is_relevant is None:
+        return True, RejectionReason.OK
+    elif is_relevant:
+        return is_relevant, RejectionReason.OK
     else:
-        return True
+        return is_relevant, RejectionReason.LLM
     

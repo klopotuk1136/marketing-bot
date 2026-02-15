@@ -6,7 +6,8 @@ load_dotenv()
 api_id = os.environ.get('API_ID')
 api_hash = os.environ.get('API_HASH')
 bot_token = os.environ.get('BOT_TOKEN') # Бот из @BotFather
-parser_chat_id = int(os.environ.get('PARSER_CHAT_ID')) # id канала куда будут сливаться все сообщения
+parser_chat_id = int(os.environ.get('PARSER_CHAT_ID')) # id канала куда будут сливаться
+parser_chat_all_id = int(os.environ.get('PARSER_CHAT_ALL_MESSAGES_ID')) # id канала куда будут сливаться остальные
 parser_vk_chat_id = int(os.environ.get('PARSER_VK_CHAT_ID'))
 logging_chat_id = int(os.environ.get('LOGGING_CHAT_ID'))
 

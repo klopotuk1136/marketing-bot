@@ -11,4 +11,5 @@ services:
             - LOGGING_CHAT_ID
             - PARSER_CHAT_ID
             - PARSER_VK_CHAT_ID
+            - PARSER_CHAT_ALL_MESSAGES_ID
             - OPENAI_API_KEY

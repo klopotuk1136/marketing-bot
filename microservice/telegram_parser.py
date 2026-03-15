@@ -1,5 +1,5 @@
 from telethon import TelegramClient, events
-from config import parser_chat_id, parser_chat_all_id, logging_chat_id, verbose
+from config import parser_chat_id, parser_chat_id_2, parser_chat_all_id, logging_chat_id, verbose
 from telethon.errors.rpcerrorlist import AuthKeyUnregisteredError
 import asyncio
 from gdrive_connector import get_tg_bots_metadata
@@ -36,7 +36,7 @@ async def get_authorized_client(session, api_id, api_hash, logger, **kwargs):
         pass
     return None
 
-async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, llm_client,
+async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, llm_client, send_chat_id,
                     send_message_func=None, logger=None, system_version="4.16.30-vxCUSTOM"
                     ):
     '''Телеграм парсер'''
@@ -55,6 +55,10 @@ async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, 
         '''Забирает сообщения из телеграмм каналов и посылает их в наш канал'''
         chat = await event.get_chat()
         if str(chat.id) == str(parser_chat_id) or '-100'+str(chat.id) == str(parser_chat_id):
+            return
+        if str(chat.id) == str(parser_chat_id_2) or '-100'+str(chat.id) == str(parser_chat_id_2):
+            return
+        if str(chat.id) == str(parser_chat_all_id) or '-100'+str(chat.id) == str(parser_chat_all_id):
             return
 
         msg_text = event.raw_text
@@ -84,7 +88,7 @@ async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, 
             post = f'{msg_header}\n\n{acc_info}\n\n"{msg_text}"'
                 
             # Отправляем в основной канал
-            await send_message_func(post, parser_chat_id)
+            await send_message_func(post, send_chat_id)
         elif reason == RejectionReason.LLM:
             if verbose:
                 logger.info(f"Found a relevant message: {msg_text}")
@@ -112,7 +116,7 @@ async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, 
 
 def create_tg_parser_tasks(api_id, api_hash, llm_client, send_message_func, logger):
     tasks = []
-    for meta in get_tg_bots_metadata():
+    for meta in get_tg_bots_metadata(0):
         try:
             session_string = meta["SessionString"].strip()
             bot_phone = meta["Phone"]
@@ -127,6 +131,29 @@ def create_tg_parser_tasks(api_id, api_hash, llm_client, send_message_func, logg
                     bot_phone=bot_phone,
                     bot_name=bot_name,
                     llm_client=llm_client,
+                    send_chat_id=parser_chat_id,
+                    send_message_func=send_message_func,
+                    logger=logger
+                )
+            ))
+        except KeyError as e:
+            logger.error(e)
+    for meta in get_tg_bots_metadata(1):
+        try:
+            session_string = meta["SessionString"].strip()
+            bot_phone = meta["Phone"]
+            bot_name = meta["Name"]
+            if bot_name is None or len(bot_name) == 0 or session_string is None or len(session_string) == 0:
+                continue
+            tasks.append(asyncio.create_task(
+                start_telegram_parser(
+                    session=session_string,
+                    api_id=api_id,
+                    api_hash=api_hash,
+                    bot_phone=bot_phone,
+                    bot_name=bot_name,
+                    llm_client=llm_client,
+                    send_chat_id=parser_chat_id_2,
                     send_message_func=send_message_func,
                     logger=logger
                 )

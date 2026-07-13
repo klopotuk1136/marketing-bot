@@ -1,5 +1,5 @@
 from telethon import TelegramClient, events
-from config import parser_chat_ids, logging_chat_id
+from config import parser_chat_ids, logging_chat_id, parser_chat_visa_id
 from telethon.errors.rpcerrorlist import AuthKeyUnregisteredError
 import asyncio
 from gdrive_connector import get_tg_bots_metadata
@@ -61,8 +61,13 @@ async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, 
         if msg_text == '':
             return
 
+        # Scan the message if it contains relevant informations for university helper
         await check_and_handle_msg_university(
             msg_text, chat, event, bot_name, bot_phone, university_chat_id, send_message_func, llm_client, logger
+        )
+        # Scan the message if it contains relevant informations for visa helper
+        await check_and_handle_msg_university(
+            msg_text, chat, event, bot_name, bot_phone, parser_chat_visa_id, send_message_func, llm_client, logger
         )
 
 

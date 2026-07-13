@@ -21,6 +21,7 @@ parser_chat_all_id = -1003765011762
 parser_vk_chat_id = -1003237099041
 logging_chat_id = -1003002833000
 
+parser_chat_visa_id = -1003898203212
 
 tg_parser_enabled = True
 # VK

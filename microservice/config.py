@@ -6,11 +6,21 @@ load_dotenv()
 api_id = os.environ.get('API_ID')
 api_hash = os.environ.get('API_HASH')
 bot_token = os.environ.get('BOT_TOKEN') # Бот из @BotFather
-parser_chat_id = int(os.environ.get('PARSER_CHAT_ID')) # id канала куда будут сливаться
-parser_chat_id_2 = int(os.environ.get('PARSER_CHAT_ID_2')) # id канала куда будут сливаться
-parser_chat_all_id = int(os.environ.get('PARSER_CHAT_ALL_MESSAGES_ID')) # id канала куда будут сливаться остальные
-parser_vk_chat_id = int(os.environ.get('PARSER_VK_CHAT_ID'))
-logging_chat_id = int(os.environ.get('LOGGING_CHAT_ID'))
+
+
+# parser_chat_id = int(os.environ.get('PARSER_CHAT_ID')) # id канала куда будут сливаться
+# parser_chat_id_2 = int(os.environ.get('PARSER_CHAT_ID_2')) # id канала куда будут сливаться
+# parser_chat_all_id = int(os.environ.get('PARSER_CHAT_ALL_MESSAGES_ID')) # id канала куда будут сливаться остальные
+# parser_vk_chat_id = int(os.environ.get('PARSER_VK_CHAT_ID'))
+# logging_chat_id = int(os.environ.get('LOGGING_CHAT_ID'))
+parser_chat_ids = [
+    -1002903950429,
+    -1003516813629
+]
+parser_chat_all_id = -1003765011762
+parser_vk_chat_id = -1003237099041
+logging_chat_id = -1003002833000
+
 
 tg_parser_enabled = True
 # VK
@@ -24,80 +34,3 @@ openai_api_key = os.environ.get("OPENAI_API_KEY")
 # Logging parameter
 verbose = True
 google_credentials_path = "google-credentials.json"
-
-
-words_whitelist = [
-    'диплом',
-    'курсова',
-    'курсовы',
-    'курсову',
-    'эссе',
-    'деньг',
-    'денюж',
-    'реферат',
-    'магистерск',
-    'отчёт',
-    'отчет',
-    'помог',
-    'помощ',
-    'заказ',
-    # 🎓 Основные студенческие
-    'диплом',      # диплом, дипломка, дипломн, дипломчик
-    'курсов',      # курсовая, курсовик, курсач, курсачок
-    'реферат',     # реферат, рефчик
-    'эссе',        # эссе, эссешка
-    'сочинен',     # сочинение
-    'магистерск',  # магистерская
-    'диссертац',   # диссертация
-    'вкр',         # ВКР
-
-    # 📑 Отчёты, задания
-    'отчет', 'отчёт', # отчёт, отчетик
-    'контрольн',   # контрольная, контрошка
-    'лаба', 'лабораторн', # лаба, лабки, лабораторная
-    'домашк', 'дз', # домашка, дз
-    'задан',       # задание, заданка
-    'практик',     # практика, отчёт по практике
-    'стажировк',   # стажировка
-
-    # 🛒 Заказ / написание
-    'заказ', 'заказать', 'закаж', 
-    'купить', 'куплю',
-    'помогите', 'сделат', 'оформ', 'решени', 'решал',
-
-    # ⏳ Сдача
-    'сдач', 'сдать', 'сдаю', 'сдавал',
-    # 🕰 Долги / хвосты
-    'долг',        # долг, долги, в долгах
-    'задолж',      # задолженность
-    'хвост',       # хвост, хвосты, "висят хвосты"
-    'пересдач',    # пересдача, пересдать
-    'недопуск',    # недопуск к сессии
-    'просроч',     # просрочка, просрочил
-
-    # ⏳ Дедлайны и сроки
-    'дедлайн',     # дедлайн, дедлайны, дедлайны горят
-    'срок',        # срок, сроки, в сроки
-
-    'печат',
-    'подпис',
-    'ключ'
-
-]
-
-words_blacklist = [
-
-    "€", "eur", "евро"
-    "$",
-    "долл",
-    "руб",
-    "pln", "зл", "zl",
-    "халтур",
-    "профил",
-    "ваканс",
-    "награ",
-    "крипт",
-    "лс",
-    "wb",
-    "вб"
-]

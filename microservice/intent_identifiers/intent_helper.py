@@ -255,4 +255,4 @@ async def check_and_handle_msg_intent(msg_text, chat, event, bot_name, bot_phone
         await compose_and_send_msg(msg_text, chat, event, bot_name, bot_phone, send_chat_id, send_message_func, logger)
     else:
         if verbose:
-            logger.info(f"Found an irrelevant message: {msg_text}")
+            logger.info(f"Found an irrelevant message with reason {reason}: {msg_text}")

@@ -130,4 +130,4 @@ async def check_and_handle_msg_university(msg_text, chat, event, bot_name, bot_p
         await compose_and_send_msg(msg_text, chat, event, bot_name, bot_phone, parser_chat_all_id, send_message_func, logger)
     else:
         if verbose:
-            logger.info(f"Found an irrelevant message: {msg_text}")
+            logger.info(f"Found an irrelevant message with reason {reason}: {msg_text}")

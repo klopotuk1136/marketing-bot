@@ -31,6 +31,7 @@ def create_logger(name, level=logging.INFO):
 def check_msg_len(text):
     if len(text.split(' ')) <= 3:
         return False
+    return True
 
 def check_pattern_func(text, whitelist, blacklist, strict_blacklist_check):
     lower_text_words = text.lower().split(' ')

@@ -1,3 +1,5 @@
+import asyncio
+
 from utils import check_msg, compose_and_send_msg
 from config import verbose
 
@@ -95,7 +97,9 @@ EXAMPLE JSON OUTPUT:
 
 async def check_and_handle_msg_visa(msg_text, chat, event, bot_name, bot_phone, send_chat_id, send_message_func, llm_client, logger):
     is_msg_relevant = False
-    is_msg_relevant, reason = check_msg(llm_client, msg_text, words_whitelist, words_blacklist, system_prompt)
+    is_msg_relevant, reason = await asyncio.to_thread(
+        check_msg, llm_client, msg_text, words_whitelist, words_blacklist, system_prompt
+    )
         
     if is_msg_relevant:
         await compose_and_send_msg(msg_text, chat, event, bot_name, bot_phone, send_chat_id, send_message_func, logger)

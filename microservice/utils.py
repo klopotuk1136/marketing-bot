@@ -8,6 +8,7 @@ class RejectionReason(Enum):
     EMPTY = 1
     BLACKLIST = 2
     LLM = 3
+    MSG_LENGTH = 4
     OK = 0
 
 def create_logger(name, level=logging.INFO):
@@ -27,7 +28,11 @@ def create_logger(name, level=logging.INFO):
     #logger.addHandler(file_handler)
     return logger
 
-def check_pattern_func(text, whitelist, blacklist):
+def check_msg_len(text):
+    if len(text.split(' ')) <= 3:
+        return False
+
+def check_pattern_func(text, whitelist, blacklist, strict_blacklist_check):
     lower_text_words = text.lower().split(' ')
 
     counter = 0
@@ -40,19 +45,25 @@ def check_pattern_func(text, whitelist, blacklist):
         for word in lower_text_words:
             if key in word:
                 counter -= 1
-    return counter > 0
+    if strict_blacklist_check:
+        return counter > 0
+    else:
+        return counter >= 0
 
 def check_msg_with_llm(client, msg_text, llm_prompt):
     llm_response = check_message_relevancy_with_llm(client, msg_text, llm_prompt)
     result_json = parse_json(llm_response)
     return parse_bool(result_json.get('is_relevant'))
 
-def check_msg(llm_client, msg, whitelist, blacklist, llm_prompt):
+def check_msg(llm_client, msg, whitelist, blacklist, llm_prompt, strict_blacklist_check=True):
 
     if len(msg) == 0:
         return False, RejectionReason.EMPTY
+
+    if not check_msg_len(msg):
+        return False, RejectionReason.MSG_LENGTH
     
-    if not check_pattern_func(msg, whitelist, blacklist):
+    if not check_pattern_func(msg, whitelist, blacklist, strict_blacklist_check):
         return False, RejectionReason.BLACKLIST
     
     is_relevant = check_msg_with_llm(llm_client, msg, llm_prompt)

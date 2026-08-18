@@ -2,7 +2,13 @@ from openai import OpenAI
 import json
 
 def get_openai_client(openai_api_key):
-    client = OpenAI(api_key=openai_api_key, base_url="https://api.deepseek.com")
+    # timeout/max_retries bound how long a single call can stall the caller.
+    client = OpenAI(
+        api_key=openai_api_key,
+        base_url="https://api.deepseek.com",
+        timeout=20.0,
+        max_retries=1,
+    )
     return client
 
 def check_message_relevancy_with_llm(client, msg, llm_prompt):

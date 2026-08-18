@@ -6,7 +6,7 @@ from gdrive_connector import get_tg_bots_metadata
 from utils import is_msg_from_our_chat
 from telethon.sessions import StringSession
 from intent_identifiers.university_helper import check_and_handle_msg_university
-from intent_identifiers.visa_helper import check_and_handle_msg_visa
+from intent_identifiers.intent_helper import check_and_handle_msg_intent
 
 async def get_authorized_client(session, api_id, api_hash, logger, **kwargs):
     try:
@@ -67,7 +67,7 @@ async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, 
             msg_text, chat, event, bot_name, bot_phone, university_chat_id, send_message_func, llm_client, logger
         )
         # Scan the message if it contains relevant informations for visa helper
-        await check_and_handle_msg_visa(
+        await check_and_handle_msg_intent(
             msg_text, chat, event, bot_name, bot_phone, parser_chat_visa_id, send_message_func, llm_client, logger
         )
 

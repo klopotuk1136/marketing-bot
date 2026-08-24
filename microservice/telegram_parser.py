@@ -67,9 +67,9 @@ async def start_telegram_parser(session, api_id, api_hash, bot_phone, bot_name, 
             msg_text, chat, event, bot_name, bot_phone, university_chat_id, send_message_func, llm_client, logger
         )
         # Scan the message if it contains relevant informations for visa helper
-        await check_and_handle_msg_intent(
-            msg_text, chat, event, bot_name, bot_phone, parser_chat_visa_id, send_message_func, llm_client, logger
-        )
+        # await check_and_handle_msg_intent(
+        #     msg_text, chat, event, bot_name, bot_phone, parser_chat_visa_id, send_message_func, llm_client, logger
+        # )
 
 
 
